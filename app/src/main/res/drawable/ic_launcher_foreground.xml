@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Amber 3x3 Sudoku grid glyph on the dark ividi.dev-matched background: outer rounded frame,
+     two evenly-spaced internal dividers each way (forming nine cells), with a single filled
+     "given digit" dot in the center cell as a subtle nod to gameplay. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M 26,26 L 82,26 Q 86,26 86,30 L 86,82 Q 86,86 82,86 L 26,86 Q 22,86 22,82 L 22,30 Q 22,26 26,26 Z" />
+    <path
+        android:fillColor="#0A0A0F"
+        android:pathData="M 26,45 L 82,45 L 82,49 L 26,49 Z" />
+    <path
+        android:fillColor="#0A0A0F"
+        android:pathData="M 26,63 L 82,63 L 82,67 L 26,67 Z" />
+    <path
+        android:fillColor="#0A0A0F"
+        android:pathData="M 45,26 L 49,26 L 49,86 L 45,86 Z" />
+    <path
+        android:fillColor="#0A0A0F"
+        android:pathData="M 63,26 L 67,26 L 67,86 L 63,86 Z" />
+    <path
+        android:fillColor="#0A0A0F"
+        android:pathData="M 47,56 A 6,6 0 1,0 59,56 A 6,6 0 1,0 47,56 Z" />
+</vector>
