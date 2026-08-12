@@ -79,8 +79,8 @@ class Localization(private val context: Context) {
                 "htpNotesTitle" to "Notas",
                 "htpNotesBody" to "Ativa o modo notas para marcar candidatos possíveis numa célula, em vez de preencher um valor definitivo.",
                 "htpToolsTitle" to "Ferramentas",
-                "htpHintTool" to "Dica — revela o valor correto de uma célula. Limitado por jogo.",
-                "htpUndoTool" to "Anular — desfaz a tua última jogada.",
+                "htpHintTool" to "Dica: revela o valor correto de uma célula. Limitado por jogo.",
+                "htpUndoTool" to "Anular: desfaz a tua última jogada.",
                 "htpCloseButton" to "Entendido"
             ),
             Lang.EN to mapOf(
@@ -136,8 +136,8 @@ class Localization(private val context: Context) {
                 "htpNotesTitle" to "Notes",
                 "htpNotesBody" to "Turn on notes mode to pencil in possible candidates for a cell, instead of committing a final value.",
                 "htpToolsTitle" to "Tools",
-                "htpHintTool" to "Hint — reveals the correct value for a cell. Limited per game.",
-                "htpUndoTool" to "Undo — reverts your last move.",
+                "htpHintTool" to "Hint: reveals the correct value for a cell. Limited per game.",
+                "htpUndoTool" to "Undo: reverts your last move.",
                 "htpCloseButton" to "Got It"
             )
         )

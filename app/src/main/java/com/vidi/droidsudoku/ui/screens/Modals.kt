@@ -98,7 +98,7 @@ fun LeaderboardBlock(
             Text(loc.t("bestTime"), color = Theme.textDim, fontSize = 13.sp)
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    bestTimeSeconds?.let { formatTime(it) } ?: "—",
+                    bestTimeSeconds?.let { formatTime(it) } ?: "–",
                     color = Theme.text,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold
@@ -113,7 +113,7 @@ fun LeaderboardBlock(
             Text(loc.t("bestHints"), color = Theme.textDim, fontSize = 13.sp)
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    bestHints?.toString() ?: "—",
+                    bestHints?.toString() ?: "–",
                     color = Theme.text,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold

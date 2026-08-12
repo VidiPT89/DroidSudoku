@@ -13,9 +13,9 @@ object Theme {
     val textDim = Color(0xFF94A3B8)
     val textFaint = Color(0xFF5B6474)
 
-    val accent = Color(0xFFF59E0B)
-    val accentLight = Color(0xFFFBBF24)
-    val accentDark = Color(0xFFB45309)
+    val accent = Color(0xFFF99C00)
+    val accentLight = Color(0xFFFCBB00)
+    val accentDark = Color(0xFFDD7400)
 
     val danger = Color(0xFFEF4444)
     val ok = Color(0xFF22C55E)
