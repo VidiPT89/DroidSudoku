@@ -20,5 +20,8 @@ data class SudokuCell(
 enum class Difficulty(val minClues: Int, val maxClues: Int, val maxHints: Int) {
     EASY(40, 45, 3),
     MEDIUM(32, 36, 4),
-    HARD(26, 30, 5)
+    HARD(26, 30, 5),
+
+    // Used only as the top band of Challenge mode; never offered in the classic difficulty picker.
+    EXPERT(23, 25, 5)
 }

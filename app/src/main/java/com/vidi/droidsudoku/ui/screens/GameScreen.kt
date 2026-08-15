@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.vidi.droidsudoku.engine.Challenge
 import com.vidi.droidsudoku.engine.GameEngine
 import com.vidi.droidsudoku.engine.LeaderboardStore
 import com.vidi.droidsudoku.engine.RecordOutcome
@@ -54,7 +55,10 @@ fun GameScreen(
     engine: GameEngine,
     loc: Localization,
     onExit: () -> Unit,
-    onNewGame: () -> Unit
+    onNewGame: () -> Unit,
+    onNextChallenge: () -> Unit = {},
+    onChallengeLevels: () -> Unit = {},
+    onChallengeWin: (level: Int, stars: Int, elapsedSeconds: Int) -> Unit = { _, _, _ -> }
 ) {
     val context = LocalContext.current
     val saveStore = remember { SaveStore(context) }

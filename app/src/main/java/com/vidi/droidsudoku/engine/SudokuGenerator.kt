@@ -12,7 +12,15 @@ data class GeneratedPuzzle(val given: IntArray, val solution: IntArray)
  */
 object SudokuGenerator {
 
-    fun generate(difficulty: Difficulty, random: Random = Random.Default): GeneratedPuzzle {
+    fun generate(difficulty: Difficulty, random: Random = Random.Default): GeneratedPuzzle =
+        digPuzzle(difficulty.minClues, random)
+
+    /** Challenge ladder entry point — clue count comes straight from the level ramp. */
+    fun generateForLevel(level: Int, random: Random = Random.Default): GeneratedPuzzle =
+        digPuzzle(Challenge.cluesForLevel(level), random)
+
+    /** Digs a full solution down to (at most) [targetClues] cells while preserving a unique solution. */
+    private fun digPuzzle(targetClues: Int, random: Random): GeneratedPuzzle {
         val solution = IntArray(81)
         fillGrid(solution, 0, random)
 
@@ -21,7 +29,7 @@ object SudokuGenerator {
         var clues = 81
 
         for (idx in order) {
-            if (clues <= difficulty.minClues) break
+            if (clues <= targetClues) break
             val backup = puzzle[idx]
             if (backup == 0) continue
             puzzle[idx] = 0

@@ -37,6 +37,7 @@ fun MainMenuScreen(
     onDifficultyChange: (Difficulty) -> Unit,
     onPlay: () -> Unit,
     onContinue: () -> Unit,
+    onChallenges: () -> Unit,
     onHowToPlay: () -> Unit,
     onToggleLang: () -> Unit
 ) {
@@ -83,6 +84,8 @@ fun MainMenuScreen(
                 Spacer(Modifier.height(12.dp))
             }
             PrimaryButton(loc.t("play"), onPlay)
+            Spacer(Modifier.height(12.dp))
+            ChallengeButton(loc.t("challenges"), onChallenges)
             Spacer(Modifier.height(12.dp))
             GhostButton(loc.t("howToPlay"), onHowToPlay)
 

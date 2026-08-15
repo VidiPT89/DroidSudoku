@@ -38,8 +38,11 @@ class GameEngine private constructor(
     var notesMode: Boolean = false,
     var moves: Int = 0,
     var hintsUsed: Int = 0,
+    var wrongMoves: Int = 0,
+    val challengeLevel: Int? = null,
     var elapsedSeconds: Int = 0
 ) {
+    val isChallenge: Boolean get() = challengeLevel != null
     private val values = initialValues.copyOf()
     private val notes = MutableList(81) { initialNotes[it].toMutableSet() }
     private val undoStack = ArrayDeque<UndoEntry>()
@@ -65,7 +68,8 @@ class GameEngine private constructor(
             return SudokuSolver.findConflictIndices(values).isEmpty()
         }
 
-    val hintsRemaining: Int get() = difficulty.maxHints - hintsUsed
+    val maxHints: Int get() = if (isChallenge) Challenge.maxHintsForLevel(challengeLevel!!) else difficulty.maxHints
+    val hintsRemaining: Int get() = maxHints - hintsUsed
     val canUndo: Boolean get() = undoStack.isNotEmpty()
 
     fun selectCell(index: Int): SudokuResult {
@@ -92,6 +96,7 @@ class GameEngine private constructor(
         values[index] = digit
         notes[index].clear()
         moves++
+        if (digit != solution[index]) wrongMoves++
         return if (isWon) SudokuResult.Won else SudokuResult.DigitEntered(index, digit)
     }
 
@@ -120,7 +125,7 @@ class GameEngine private constructor(
     }
 
     fun hint(random: Random = Random.Default): SudokuResult {
-        if (hintsUsed >= difficulty.maxHints) return SudokuResult.HintExhausted
+        if (hintsUsed >= maxHints) return SudokuResult.HintExhausted
 
         val selected = selectedIndex
         val target = if (selected != null && !givenMask[selected] && values[selected] != solution[selected]) {
@@ -155,6 +160,8 @@ class GameEngine private constructor(
         notesMode = notesMode,
         moves = moves,
         hintsUsed = hintsUsed,
+        wrongMoves = wrongMoves,
+        challengeLevel = challengeLevel,
         elapsedSeconds = elapsedSeconds
     )
 
@@ -171,6 +178,19 @@ class GameEngine private constructor(
             )
         }
 
+        fun newChallenge(level: Int, random: Random = Random.Default): GameEngine {
+            val generated = SudokuGenerator.generateForLevel(level, random)
+            val given = BooleanArray(81) { generated.given[it] != 0 }
+            return GameEngine(
+                difficulty = Challenge.bandForLevel(level),
+                givenMask = given,
+                solution = generated.solution,
+                initialValues = generated.given,
+                initialNotes = List(81) { emptySet() },
+                challengeLevel = level
+            )
+        }
+
         fun fromSnapshot(snapshot: SudokuSnapshot): GameEngine {
             val difficulty = Difficulty.valueOf(snapshot.difficulty)
             val given = BooleanArray(81) { snapshot.given[it] != 0 }
@@ -184,6 +204,8 @@ class GameEngine private constructor(
                 notesMode = snapshot.notesMode,
                 moves = snapshot.moves,
                 hintsUsed = snapshot.hintsUsed,
+                wrongMoves = snapshot.wrongMoves,
+                challengeLevel = snapshot.challengeLevel,
                 elapsedSeconds = snapshot.elapsedSeconds
             )
         }
@@ -200,5 +222,7 @@ data class SudokuSnapshot(
     val notesMode: Boolean,
     val moves: Int,
     val hintsUsed: Int,
+    val wrongMoves: Int = 0,
+    val challengeLevel: Int? = null,
     val elapsedSeconds: Int
 )

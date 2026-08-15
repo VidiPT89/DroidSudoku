@@ -22,6 +22,8 @@ class SaveStore(context: Context) {
             put("notesMode", snapshot.notesMode)
             put("moves", snapshot.moves)
             put("hintsUsed", snapshot.hintsUsed)
+            put("wrongMoves", snapshot.wrongMoves)
+            put("challengeLevel", snapshot.challengeLevel ?: -1)
             put("elapsedSeconds", snapshot.elapsedSeconds)
         }
         prefs.edit().putString("snapshot", json.toString()).apply()
@@ -53,6 +55,8 @@ class SaveStore(context: Context) {
                 notesMode = json.getBoolean("notesMode"),
                 moves = json.getInt("moves"),
                 hintsUsed = json.getInt("hintsUsed"),
+                wrongMoves = json.optInt("wrongMoves", 0),
+                challengeLevel = json.optInt("challengeLevel", -1).takeIf { it >= 0 },
                 elapsedSeconds = json.getInt("elapsedSeconds")
             )
         } catch (e: Exception) {

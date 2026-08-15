@@ -15,15 +15,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.vidi.droidsudoku.data.Difficulty
+import com.vidi.droidsudoku.engine.Challenge
+import com.vidi.droidsudoku.engine.ChallengeStore
 import com.vidi.droidsudoku.engine.GameEngine
 import com.vidi.droidsudoku.engine.SaveStore
 import com.vidi.droidsudoku.i18n.Localization
+import com.vidi.droidsudoku.ui.screens.ChallengesScreen
 import com.vidi.droidsudoku.ui.screens.GameScreen
 import com.vidi.droidsudoku.ui.screens.HowToPlayScreen
 import com.vidi.droidsudoku.ui.screens.MainMenuScreen
 import com.vidi.droidsudoku.ui.screens.SplashScreen
 
-private enum class AppScreen { SPLASH, MENU, HOW_TO_PLAY, GAME }
+private enum class AppScreen { SPLASH, MENU, HOW_TO_PLAY, GAME, LEVELS }
 
 private const val PREFS = "droidsudoku_prefs"
 private const val KEY_DIFFICULTY = "difficulty"
@@ -53,11 +56,22 @@ private fun RootApp() {
     val context = LocalContext.current
     val loc = remember { Localization(context) }
     val saveStore = remember { SaveStore(context) }
+    val challengeStore = remember { ChallengeStore(context) }
 
     var difficulty by remember { mutableStateOf(loadStoredDifficulty(context)) }
     var engine by remember { mutableStateOf<GameEngine?>(null) }
     var screen by remember { mutableStateOf(AppScreen.SPLASH) }
     var hasSave by remember { mutableStateOf(saveStore.hasSave()) }
+    var challengeProgress by remember { mutableStateOf(challengeStore.load()) }
+    var challengeLevel by remember { mutableStateOf<Int?>(null) }
+
+    fun startChallenge(level: Int) {
+        engine = GameEngine.newChallenge(level)
+        challengeLevel = level
+        saveStore.clear()
+        hasSave = false
+        screen = AppScreen.GAME
+    }
 
     Box(Modifier.fillMaxSize().safeDrawingPadding()) {
         when (screen) {
@@ -74,6 +88,7 @@ private fun RootApp() {
                 },
                 onPlay = {
                     engine = GameEngine.newGame(difficulty)
+                    challengeLevel = null
                     saveStore.clear()
                     hasSave = false
                     screen = AppScreen.GAME
@@ -81,10 +96,18 @@ private fun RootApp() {
                 onContinue = {
                     val snapshot = saveStore.load()
                     engine = if (snapshot != null) GameEngine.fromSnapshot(snapshot) else GameEngine.newGame(difficulty)
+                    challengeLevel = snapshot?.challengeLevel
                     screen = AppScreen.GAME
                 },
+                onChallenges = { screen = AppScreen.LEVELS },
                 onHowToPlay = { screen = AppScreen.HOW_TO_PLAY },
                 onToggleLang = { loc.toggle() }
+            )
+            AppScreen.LEVELS -> ChallengesScreen(
+                loc = loc,
+                progress = challengeProgress,
+                onBack = { screen = AppScreen.MENU },
+                onPickLevel = ::startChallenge
             )
             AppScreen.HOW_TO_PLAY -> HowToPlayScreen(loc) {
                 screen = AppScreen.MENU
@@ -95,11 +118,24 @@ private fun RootApp() {
                     loc = loc,
                     onExit = {
                         hasSave = saveStore.hasSave()
-                        screen = AppScreen.MENU
+                        screen = if (challengeLevel != null) AppScreen.LEVELS else AppScreen.MENU
                     },
                     onNewGame = {
-                        engine = GameEngine.newGame(difficulty)
+                        val lvl = challengeLevel
+                        engine = if (lvl != null) GameEngine.newChallenge(lvl) else GameEngine.newGame(difficulty)
                         saveStore.clear()
+                    },
+                    onNextChallenge = {
+                        val next = (challengeLevel ?: 0) + 1
+                        startChallenge(next)
+                    },
+                    onChallengeLevels = {
+                        challengeProgress = challengeStore.load()
+                        screen = AppScreen.LEVELS
+                    },
+                    onChallengeWin = { level, stars, elapsed ->
+                        challengeStore.recordWin(level, elapsed, stars)
+                        challengeProgress = challengeStore.load()
                     }
                 )
             }
