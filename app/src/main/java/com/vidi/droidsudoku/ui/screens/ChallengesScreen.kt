@@ -103,9 +103,10 @@ fun ChallengesScreen(
 
             if (windowStart > 1) {
                 Box(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp)) {
-                    GhostButton(loc.t("showEarlier")) {
-                        windowStart = max(1, windowStart - Challenge.LEVELS_BEHIND)
-                    }
+                    GhostButton(
+                        text = loc.t("showEarlier"),
+                        onClick = { windowStart = max(1, windowStart - Challenge.LEVELS_BEHIND) }
+                    )
                 }
             }
 
