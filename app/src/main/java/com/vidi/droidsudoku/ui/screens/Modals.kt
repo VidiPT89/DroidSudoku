@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.vidi.droidsudoku.engine.ChallengeOutcome
 import com.vidi.droidsudoku.engine.RecordOutcome
 import com.vidi.droidsudoku.i18n.Localization
 import com.vidi.droidsudoku.ui.theme.Theme
@@ -122,6 +123,104 @@ fun LeaderboardBlock(
                     Text(loc.t("newRecordHints"), color = Theme.ok, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
+        }
+    }
+}
+
+/**
+ * Challenge-mode win modal: level number in the title, star rating, best-time
+ * delta, and Next Level / Back to Levels buttons instead of the classic
+ * Leaderboard block.
+ */
+@Composable
+fun ChallengeWinModal(
+    loc: Localization,
+    level: Int,
+    stars: Int,
+    elapsedSeconds: Int,
+    outcome: ChallengeOutcome,
+    onNextLevel: () -> Unit,
+    onBackToLevels: () -> Unit
+) {
+    ModalScaffold {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("🎉", fontSize = 40.sp)
+            Spacer(Modifier.height(10.dp))
+            Text(
+                "${loc.t("level")} $level ${loc.t("levelCompleteSuffix")}",
+                color = Theme.text,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(Modifier.height(10.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                for (i in 1..3) {
+                    Text(
+                        "★",
+                        color = if (i <= stars) Theme.accent else Theme.textFaint,
+                        fontSize = 30.sp
+                    )
+                }
+            }
+
+            if (outcome.unlockedNext) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    loc.t("levelUnlocked"),
+                    color = Theme.ok,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Theme.bgPanel2, RoundedCornerShape(10.dp))
+                    .padding(14.dp)
+            ) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(loc.t("time"), color = Theme.textDim, fontSize = 13.sp)
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            formatTime(elapsedSeconds),
+                            color = Theme.text,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        if (outcome.isNewBestTime) {
+                            Text(loc.t("newRecordTime"), color = Theme.ok, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(loc.t("bestTime"), color = Theme.textDim, fontSize = 13.sp)
+                    Text(
+                        formatTime(outcome.bestTimeSeconds),
+                        color = Theme.text,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(loc.t("starsLabel"), color = Theme.textDim, fontSize = 13.sp)
+                    Text(
+                        "${outcome.bestStars} / 3",
+                        color = Theme.text,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+            PrimaryButton(loc.t("nextLevel"), onNextLevel)
+            Spacer(Modifier.height(10.dp))
+            GhostButton(loc.t("backToLevels"), onBackToLevels)
         }
     }
 }

@@ -38,6 +38,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.vidi.droidsudoku.engine.Challenge
+import com.vidi.droidsudoku.engine.ChallengeOutcome
+import com.vidi.droidsudoku.engine.ChallengeStore
 import com.vidi.droidsudoku.engine.GameEngine
 import com.vidi.droidsudoku.engine.LeaderboardStore
 import com.vidi.droidsudoku.engine.RecordOutcome
@@ -48,7 +50,7 @@ import com.vidi.droidsudoku.ui.sound.SoundFx
 import com.vidi.droidsudoku.ui.theme.Theme
 import kotlinx.coroutines.delay
 
-private enum class ModalKind { NONE, WIN, CONFIRM_RESTART }
+private enum class ModalKind { NONE, WIN, CHALLENGE_WIN, CONFIRM_RESTART }
 
 @Composable
 fun GameScreen(
@@ -63,6 +65,7 @@ fun GameScreen(
     val context = LocalContext.current
     val saveStore = remember { SaveStore(context) }
     val leaderboardStore = remember { LeaderboardStore(context) }
+    val challengeStore = remember { ChallengeStore(context) }
     val soundFx = remember { SoundFx() }
     DisposableEffect(Unit) { onDispose { soundFx.release() } }
 
@@ -71,6 +74,8 @@ fun GameScreen(
     var toastMessage by remember { mutableStateOf<String?>(null) }
     val shakeTokens = remember { mutableStateMapOf<Int, Int>() }
     var recordOutcome by remember { mutableStateOf(RecordOutcome(false, false)) }
+    var challengeOutcome by remember { mutableStateOf<ChallengeOutcome?>(null) }
+    var challengeStars by remember { mutableStateOf(0) }
     var running by remember { mutableStateOf(true) }
 
     LaunchedEffect(running, modal) {
@@ -128,11 +133,21 @@ fun GameScreen(
             SudokuResult.Won -> {
                 soundFx.win()
                 running = false
-                recordOutcome = leaderboardStore.recordCompletion(
-                    engine.difficulty, engine.elapsedSeconds, engine.hintsUsed
-                )
                 saveStore.clear()
-                modal = ModalKind.WIN
+                val level = engine.challengeLevel
+                if (level != null) {
+                    val stars = Challenge.starsFor(engine.wrongMoves, engine.hintsUsed)
+                    challengeStars = stars
+                    val outcome = challengeStore.recordWin(level, engine.elapsedSeconds, stars)
+                    challengeOutcome = outcome
+                    onChallengeWin(level, stars, engine.elapsedSeconds)
+                    modal = ModalKind.CHALLENGE_WIN
+                } else {
+                    recordOutcome = leaderboardStore.recordCompletion(
+                        engine.difficulty, engine.elapsedSeconds, engine.hintsUsed
+                    )
+                    modal = ModalKind.WIN
+                }
             }
             is SudokuResult.CellSelected -> version++
             SudokuResult.Ignored -> {}
@@ -179,6 +194,7 @@ fun GameScreen(
         Column(Modifier.fillMaxSize().padding(16.dp)) {
             GameHeader(
                 loc = loc,
+                challengeLevel = engine.challengeLevel,
                 elapsedSeconds = engine.elapsedSeconds,
                 moves = engine.moves,
                 hintsRemaining = engine.hintsRemaining,
@@ -227,6 +243,20 @@ fun GameScreen(
                 onPlayAgain = { performRestart() },
                 onBackToMenu = { modal = ModalKind.NONE; onExit() }
             )
+        } else if (modal == ModalKind.CHALLENGE_WIN) {
+            val outcome = challengeOutcome
+            val level = engine.challengeLevel
+            if (outcome != null && level != null) {
+                ChallengeWinModal(
+                    loc = loc,
+                    level = level,
+                    stars = challengeStars,
+                    elapsedSeconds = engine.elapsedSeconds,
+                    outcome = outcome,
+                    onNextLevel = { modal = ModalKind.NONE; onNextChallenge() },
+                    onBackToLevels = { modal = ModalKind.NONE; onChallengeLevels() }
+                )
+            }
         } else if (modal == ModalKind.CONFIRM_RESTART) {
             ConfirmModal(
                 title = loc.t("confirmRestartTitle"),
@@ -243,6 +273,7 @@ fun GameScreen(
 @Composable
 private fun GameHeader(
     loc: Localization,
+    challengeLevel: Int?,
     elapsedSeconds: Int,
     moves: Int,
     hintsRemaining: Int,
@@ -257,6 +288,9 @@ private fun GameHeader(
             Modifier.weight(1f),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
+            if (challengeLevel != null) {
+                StatGroup(loc.t("level"), challengeLevel.toString())
+            }
             StatGroup(loc.t("time"), formatTime(elapsedSeconds))
             StatGroup(loc.t("moves"), moves.toString())
             StatGroup(loc.t("hintsLeft"), hintsRemaining.toString())
